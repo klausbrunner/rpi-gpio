@@ -1,5 +1,6 @@
 /*
-Playing around with Go on the Raspberry Pi, doing some trivial GPIO stuff.
+ Playing around with Go on the Raspberry Pi, doing some trivial GPIO stuff
+ using the clean but potentially slow /sys/class approach.
 */
 package main
 
@@ -30,11 +31,14 @@ func main() {
 	err = writeOut(pinfile+"/direction", "out")
 	check(err)
 
-	err = writeOut(pinfile+"/value", "0")
-	check(err)
+	// led blinking
+	for i := 0; i < 5; i++ {
+		err = writeOut(pinfile+"/value", "0")
+		check(err)
+		time.Sleep(300 * time.Millisecond)
 
-	time.Sleep(1 * time.Second)
-
-	err = writeOut(pinfile+"/value", "1")
-	check(err)
+		err = writeOut(pinfile+"/value", "1")
+		check(err)
+		time.Sleep(300 * time.Millisecond)
+	}
 }
