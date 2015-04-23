@@ -7,7 +7,13 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"strconv"
 	"time"
+)
+
+const (
+	gpioBase = "/sys/class/gpio"
+	pinBase  = gpioBase + "/gpio"
 )
 
 func check(e error) {
@@ -20,25 +26,48 @@ func writeOut(name string, data string) error {
 	return ioutil.WriteFile(name, []byte(data), 0644)
 }
 
-func main() {
-	const port = "17"
-	const gpioBase = "/sys/class/gpio"
-	pinfile := fmt.Sprintf(gpioBase+"/gpio%s", port)
+func pinfile(port int) string {
+	return pinBase + strconv.Itoa(port)
+}
 
-	err := writeOut(gpioBase+"/export", port)
+func setup(port int, output bool) {
+	err := writeOut(gpioBase+"/export", strconv.Itoa(port))
 	// if "device or resource busy", it already exists - so just go ahead
 
-	err = writeOut(pinfile+"/direction", "out")
+	var value string = "in"
+	if output {
+		value = "out"
+	}
+
+	err = writeOut(pinfile(port)+"/direction", value)
 	check(err)
+}
+
+func blink(port int) {
+	setup(port, true)
 
 	// led blinking
 	for i := 0; i < 5; i++ {
-		err = writeOut(pinfile+"/value", "0")
-		check(err)
+		check(writeOut(pinfile(port)+"/value", "0"))
 		time.Sleep(300 * time.Millisecond)
 
-		err = writeOut(pinfile+"/value", "1")
-		check(err)
+		check(writeOut(pinfile(port)+"/value", "1"))
 		time.Sleep(300 * time.Millisecond)
 	}
+}
+
+func getinput(port int) {
+	setup(port, false)
+
+	// check(writeOut(pinfile(port)+"/edge", "both"))
+
+	value, err := ioutil.ReadFile(pinfile(port) + "/value")
+	check(err)
+	fmt.Printf("current value on port %v: %v", port, string(value))
+
+}
+
+func main() {
+	getinput(18)
+	blink(17)
 }

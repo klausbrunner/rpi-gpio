@@ -1,5 +1,5 @@
 /*
- Playing around with Go on the Raspberry Pi, doing some trivial GPIO stuff 
+ Playing around with Go on the Raspberry Pi, doing some trivial GPIO stuff
  using the unsafe/dangerous/ugly but fast mmap approach.
 */
 package main
